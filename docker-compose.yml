@@ -1,0 +1,12 @@
+version: '3.9'
+services:
+  currency_db:
+    container_name: currency_db
+    restart: always
+    image: postgres
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: anbi
+    ports:
+      - '5432:5432'

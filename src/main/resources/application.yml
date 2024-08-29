@@ -1,0 +1,29 @@
+spring:
+  application:
+     name: back
+  cache:
+    type: simple
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: anbi
+    password: secret
+  flyway:
+    url: jdbc:postgresql://localhost:5432/postgres
+    locations: classpath:db/migration
+    user: anbi
+    password: secret
+    baseline-on-migrate: true
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create-drop
+
+logging:
+  level:
+    root: INFO
+
+default:
+  fee: 0.05
+
+webclient:
+  ecb-uri: https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml
