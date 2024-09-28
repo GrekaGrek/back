@@ -1,8 +1,6 @@
 package com.bilderlings.back.service.fetcher
 
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.mockk
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -21,10 +19,10 @@ class ECBRatesFetcherTest {
 
     @Test
     fun `should fetch and extract rates successfully`() = runBlocking {
-        coEvery { webClientMock.get() } returns requestHeadersUriSpecMock
-        coEvery { requestHeadersUriSpecMock.uri(ecbUriMock) } returns requestHeadersUriSpecMock
-        coEvery { requestHeadersUriSpecMock.retrieve() } returns responseSpecMock
-        coEvery { responseSpecMock.bodyToMono(String::class.java) } returns Mono.just(
+        every { webClientMock.get() } returns requestHeadersUriSpecMock
+        every { requestHeadersUriSpecMock.uri(ecbUriMock) } returns requestHeadersUriSpecMock
+        every { requestHeadersUriSpecMock.retrieve() } returns responseSpecMock
+        every { responseSpecMock.bodyToMono(String::class.java) } returns Mono.just(
             """
             <gesmes:Envelope xmlns:gesmes="http://www.gesmes.org/xml/2002-08-01"
                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -45,18 +43,18 @@ class ECBRatesFetcherTest {
         )
         assertEquals(expectedRates, rates)
 
-        coVerify { webClientMock.get() }
-        coVerify { requestHeadersUriSpecMock.uri(ecbUriMock) }
-        coVerify { requestHeadersUriSpecMock.retrieve() }
-        coVerify { responseSpecMock.bodyToMono(String::class.java) }
+        verify { webClientMock.get() }
+        verify { requestHeadersUriSpecMock.uri(ecbUriMock) }
+        verify { requestHeadersUriSpecMock.retrieve() }
+        verify { responseSpecMock.bodyToMono(String::class.java) }
     }
 
     @Test
     fun `should throw RuntimeException when rates fetch fails`() = runBlocking {
-        coEvery { webClientMock.get() } returns requestHeadersUriSpecMock
-        coEvery { requestHeadersUriSpecMock.uri(ecbUriMock) } returns requestHeadersUriSpecMock
-        coEvery { requestHeadersUriSpecMock.retrieve() } returns responseSpecMock
-        coEvery { responseSpecMock.bodyToMono(String::class.java) } returns Mono.error(
+        every { webClientMock.get() } returns requestHeadersUriSpecMock
+        every { requestHeadersUriSpecMock.uri(ecbUriMock) } returns requestHeadersUriSpecMock
+        every { requestHeadersUriSpecMock.retrieve() } returns responseSpecMock
+        every { responseSpecMock.bodyToMono(String::class.java) } returns Mono.error(
             RuntimeException("Failed to fetch exchange rates from ECB")
         )
         try {
@@ -64,9 +62,9 @@ class ECBRatesFetcherTest {
         } catch (e: RuntimeException) {
             assertEquals("Failed to fetch exchange rates from ECB", e.message)
         }
-        coVerify { webClientMock.get() }
-        coVerify { requestHeadersUriSpecMock.uri(ecbUriMock) }
-        coVerify { requestHeadersUriSpecMock.retrieve() }
-        coVerify { responseSpecMock.bodyToMono(String::class.java) }
+        verify { webClientMock.get() }
+        verify { requestHeadersUriSpecMock.uri(ecbUriMock) }
+        verify { requestHeadersUriSpecMock.retrieve() }
+        verify { responseSpecMock.bodyToMono(String::class.java) }
     }
 }

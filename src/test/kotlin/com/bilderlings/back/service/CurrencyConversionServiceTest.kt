@@ -1,14 +1,13 @@
 package com.bilderlings.back.service
 
-import io.mockk.coEvery
-import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.verify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 class CurrencyConversionServiceTest {
 
@@ -25,8 +24,8 @@ class CurrencyConversionServiceTest {
     private val rate = BigDecimal.valueOf(1.12)
 
     private fun setupMocks(amount: BigDecimal, fromCurrency: String, toCurrency: String, fee: BigDecimal, rate: BigDecimal) {
-        coEvery { feeServiceMock.getFee(fromCurrency, toCurrency, defaultFee) } returns fee
-        coEvery { exchangeRateServiceMock.getRate(toCurrency) } returns rate
+        every { feeServiceMock.getFee(fromCurrency, toCurrency, defaultFee) } returns fee
+        every { exchangeRateServiceMock.getRate(toCurrency) } returns rate
     }
 
     @Test
@@ -40,7 +39,7 @@ class CurrencyConversionServiceTest {
 
         assertEquals(expected, result, "The conversion result should match the expected value")
 
-        coVerify {
+        verify {
             feeServiceMock.getFee(fromCurrency, toCurrency, defaultFee)
             exchangeRateServiceMock.getRate(toCurrency)
         }
@@ -57,7 +56,7 @@ class CurrencyConversionServiceTest {
 
         assertEquals(expected, result)
 
-        coVerify {
+        verify {
             feeServiceMock.getFee(fromCurrency, toCurrency, defaultFee)
             exchangeRateServiceMock.getRate(toCurrency)
         }
@@ -73,7 +72,7 @@ class CurrencyConversionServiceTest {
 
         assertEquals(BigDecimal.ZERO.setScale(2), result)
 
-        coVerify {
+        verify {
             feeServiceMock.getFee(fromCurrency, toCurrency, defaultFee)
             exchangeRateServiceMock.getRate(toCurrency)
         }
@@ -90,7 +89,7 @@ class CurrencyConversionServiceTest {
 
         assertEquals(expected, result)
 
-        coVerify {
+        verify {
             feeServiceMock.getFee(fromCurrency, toCurrency, defaultFee)
             exchangeRateServiceMock.getRate(toCurrency)
         }

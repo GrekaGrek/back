@@ -29,52 +29,52 @@ class ConversionFeeServiceTest {
     @Test
     fun `should get fee list`() {
         val feeList = createFeeList()
-        coEvery { repositoryMock.findAll() } returns feeList
+        every { repositoryMock.findAll() } returns feeList
 
         val result = feeService.getFeeList()
 
         assertNotNull(result, "The result must not be null")
         assertEquals(feeList, result)
 
-        coVerify { repositoryMock.findAll() }
+        verify { repositoryMock.findAll() }
     }
 
     @Test
     fun `should get fee if exists`() {
         val expectedFee = fee
-        coEvery { repositoryMock.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency) } returns
+        every { repositoryMock.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency) } returns
                 ConversionFee(1, fromCurrency, toCurrency, fee)
 
         val result = feeService.getFee(fromCurrency, toCurrency, BigDecimal.ZERO)
 
         assertEquals(expectedFee, result)
-        coVerify { repositoryMock.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency) }
+        verify { repositoryMock.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency) }
     }
 
     @Test
     fun `should return default fee if fee does not exist`() {
         val expectedFee = defaultFee
-        coEvery { repositoryMock.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency) } returns null
+        every { repositoryMock.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency) } returns null
 
         val result = feeService.getFee(fromCurrency, toCurrency, defaultFee)
 
         assertEquals(expectedFee, result)
 
-        coVerify { repositoryMock.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency) }
+        verify { repositoryMock.findByFromCurrencyAndToCurrency(fromCurrency, toCurrency) }
     }
 
     @Test
     fun `should add fee`() {
         val feeEntity = ConversionFee(null, fromCurrency, toCurrency, fee)
         val savedFee = feeEntity.copy(id = 1)
-        coEvery { repositoryMock.save(feeEntity) } returns savedFee
+        every { repositoryMock.save(feeEntity) } returns savedFee
 
         val result = feeService.addFee(fromCurrency, toCurrency, fee)
 
         assertNotNull(result, "The result should not be null")
         assertEquals(savedFee, result)
 
-        coVerify { repositoryMock.save(feeEntity) }
+        verify { repositoryMock.save(feeEntity) }
     }
 
     @Test
@@ -82,8 +82,8 @@ class ConversionFeeServiceTest {
         val existingFee = ConversionFee(1L, fromCurrency, toCurrency, fee)
         val updatedFee = existingFee.copy(fromCurrency = fromCurrency, toCurrency = toCurrency, fee = anotherFee)
 
-        coEvery { repositoryMock.findById(1L) } returns Optional.of(existingFee)
-        coEvery { repositoryMock.save(updatedFee) } returns updatedFee
+        every { repositoryMock.findById(1L) } returns Optional.of(existingFee)
+        every { repositoryMock.save(updatedFee) } returns updatedFee
 
         val result = feeService.editFee(1L, fromCurrency, toCurrency, anotherFee)
 
@@ -94,7 +94,7 @@ class ConversionFeeServiceTest {
 
     @Test
     fun `should throw exception when editing non-existing fee`() {
-        coEvery { repositoryMock.findById(45L) } returns Optional.empty()
+        every { repositoryMock.findById(45L) } returns Optional.empty()
 
         assertThrows<NotFoundException> {
             runBlocking {
@@ -106,7 +106,7 @@ class ConversionFeeServiceTest {
 
     @Test
     fun `should remove fee`() {
-        coEvery { repositoryMock.deleteById(1L) } just Runs
+        every { repositoryMock.deleteById(1L) } just Runs
 
         feeService.removeFee(1L)
 

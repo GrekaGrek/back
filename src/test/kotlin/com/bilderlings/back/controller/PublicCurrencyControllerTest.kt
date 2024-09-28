@@ -1,8 +1,10 @@
 package com.bilderlings.back.controller
 
 import com.bilderlings.back.configuration.exception.ExceptionControllerAdvice
+import com.bilderlings.back.model.ConversionRequest
 import com.bilderlings.back.service.CurrencyConversionService
 import com.bilderlings.back.service.ExchangeRateService
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -12,7 +14,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
@@ -24,6 +25,7 @@ import java.math.BigDecimal
 class PublicCurrencyControllerTest {
 
     private lateinit var mockMvc: MockMvc
+    private val objectMapper = ObjectMapper()
     private val currencyConversionServiceMock: CurrencyConversionService = mockk()
     private val exchangeRateServiceMock: ExchangeRateService = mockk()
 
@@ -37,16 +39,16 @@ class PublicCurrencyControllerTest {
 
     @Test
     fun `should convert currency successfully`() {
-        val (amount, fromCurrency, toCurrency) = getCommonTestData()
+        val conversionRequest = getCommonTestData()
         val convertedAmount = BigDecimal.valueOf(90.00)
 
-        every { currencyConversionServiceMock.calculateConversion(amount, fromCurrency, toCurrency) } returns convertedAmount
+        every { currencyConversionServiceMock.calculateConversion(
+            conversionRequest.amount, conversionRequest.fromCurrency, conversionRequest.toCurrency) } returns convertedAmount
 
         mockMvc.perform(
-            get("/public/conversion/convert")
-                .param("amount", amount.toString())
-                .param("fromCurrency", fromCurrency)
-                .param("toCurrency", toCurrency)
+            post("/public/conversion/convert")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(conversionRequest))
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andDo(print())
@@ -54,20 +56,21 @@ class PublicCurrencyControllerTest {
             .andExpect(content().string(convertedAmount.toString()))
             .andReturn()
 
-        verify { currencyConversionServiceMock.calculateConversion(amount, fromCurrency, toCurrency) }
+        verify { currencyConversionServiceMock.calculateConversion(conversionRequest.amount,
+            conversionRequest.fromCurrency, conversionRequest.toCurrency) }
     }
 
     @Test
     fun `should handle currency conversion failure`() {
-        val (amount, fromCurrency, toCurrency) = getCommonTestData()
+        val conversionRequest = getCommonTestData()
 
-        every { currencyConversionServiceMock.calculateConversion(amount, fromCurrency, toCurrency) } throws RuntimeException("Conversion service error")
+        every { currencyConversionServiceMock.calculateConversion(
+            conversionRequest.amount, conversionRequest.fromCurrency, conversionRequest.toCurrency) } throws RuntimeException("Conversion service error")
 
         mockMvc.perform(
-            get("/public/conversion/convert")
-                .param("amount", amount.toString())
-                .param("fromCurrency", fromCurrency)
-                .param("toCurrency", toCurrency)
+            post("/public/conversion/convert")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(conversionRequest))
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andDo(print())
@@ -76,13 +79,14 @@ class PublicCurrencyControllerTest {
             .andExpect(jsonPath("$.details").value("Conversion service error"))
             .andReturn()
 
-        verify { currencyConversionServiceMock.calculateConversion(amount, fromCurrency, toCurrency) }
+        verify { currencyConversionServiceMock.calculateConversion(conversionRequest.amount,
+            conversionRequest.fromCurrency, conversionRequest.toCurrency) }
     }
 
     @Test
     fun `should handle invalid parameters for currency conversion`() {
         mockMvc.perform(
-            get("/public/conversion/convert")
+            post("/public/conversion/convert")
                 .param("amount", null)
                 .param("fromCurrency", "USD")
                 .param("toCurrency", "EUR")
@@ -90,7 +94,7 @@ class PublicCurrencyControllerTest {
         )
             .andDo(print())
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.detail").value("Required parameter 'amount' is not present."))
+            .andExpect(jsonPath("$.detail").value("Failed to read request"))
             .andReturn()
     }
 
@@ -126,10 +130,10 @@ class PublicCurrencyControllerTest {
         verify { exchangeRateServiceMock.refreshExchangeRates() }
     }
 
-    private fun getCommonTestData(): Triple<BigDecimal, String, String> {
+    private fun getCommonTestData(): ConversionRequest {
         val amount = BigDecimal.valueOf(100.00)
         val fromCurrency = "USD"
         val toCurrency = "EUR"
-        return Triple(amount, fromCurrency, toCurrency)
+        return ConversionRequest(fromCurrency, toCurrency, amount)
     }
 }

@@ -32,7 +32,7 @@ class ExchangeRateServiceTest {
     fun `should fetch rate from cache`() {
         val rates = getSampleRates()
 
-        coEvery { ecbRatesFetcherMock.fetchRates() } returns rates
+        every { ecbRatesFetcherMock.fetchRates() } returns rates
         exchangeRateService.refreshExchangeRates()
 
         val usdRate = exchangeRateService.getRate("USD")
@@ -46,7 +46,7 @@ class ExchangeRateServiceTest {
     fun `should throw IllegalArgumentException for non-existent currency rate`() {
         val rates = getSampleRates()
 
-        coEvery { ecbRatesFetcherMock.fetchRates() } returns rates
+        every { ecbRatesFetcherMock.fetchRates() } returns rates
         every { exchangeRatesRepositoryMock.saveAll(any<List<ExchangeRate>>()) } returns emptyList()
 
         exchangeRateService.refreshExchangeRates()
@@ -54,17 +54,17 @@ class ExchangeRateServiceTest {
         assertFailsWith<IllegalArgumentException> {
             exchangeRateService.getRate("JPY")
         }
-        coVerify { ecbRatesFetcherMock.fetchRates() }
+        verify { ecbRatesFetcherMock.fetchRates() }
     }
 
     @Test
     fun `should throw RuntimeException when fetch fails`() {
-        coEvery { ecbRatesFetcherMock.fetchRates() } throws RuntimeException("Failed to fetch rates")
+        every { ecbRatesFetcherMock.fetchRates() } throws RuntimeException("Failed to fetch rates")
 
         assertFailsWith<RuntimeException> {
             exchangeRateService.refreshExchangeRates()
         }
-        coVerify { ecbRatesFetcherMock.fetchRates() }
+        verify { ecbRatesFetcherMock.fetchRates() }
     }
 
     private fun getSampleRates(): Map<String, BigDecimal> {

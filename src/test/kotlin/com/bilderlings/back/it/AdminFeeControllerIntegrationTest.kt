@@ -24,7 +24,8 @@ import java.math.BigDecimal
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class AdminFeeControllerTest {
+@Sql(scripts = ["classpath:test-data.sql"])
+class AdminFeeControllerIntegrationTest {
 
     private val objectMapper = ObjectMapper()
 
@@ -38,7 +39,6 @@ class AdminFeeControllerTest {
     private val postgreSQLContainer = PostgreSQLContainer<Nothing>("postgres:latest")
 
     @Test
-    @Sql(scripts = ["classpath:test-data.sql"])
     fun `should get list of fees successfully`() {
         mockMvc.perform(
             get("/admin/fees")
@@ -80,7 +80,6 @@ class AdminFeeControllerTest {
     }
 
     @Test
-    @Sql(scripts = ["classpath:test-data.sql"])
     fun `should update fee successfully`() {
         val feeRequest = FeeRequest("HUF", "JPY", BigDecimal.valueOf(0.4))
         val updatedFee = ConversionFee(id = 2L, fromCurrency = "HUF", toCurrency = "JPY", fee = BigDecimal.valueOf(0.4))

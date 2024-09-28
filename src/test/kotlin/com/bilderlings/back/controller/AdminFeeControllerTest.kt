@@ -118,7 +118,7 @@ class AdminFeeControllerTest {
 
     @Test
     fun `should throw MethodArgumentNotValidException when adding a fee with invalid data`() {
-        val invalidFeeRequest = FeeRequest("", "EUR", BigDecimal.valueOf(-1.12))
+        val invalidFeeRequest = FeeRequest("EURO", "EUR", BigDecimal.valueOf(-1.12))
 
         mockMvc.perform(
             post("/admin/fees")
@@ -129,7 +129,7 @@ class AdminFeeControllerTest {
             .andDo(print())
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.message").value("Validation failed"))
-            .andExpect(jsonPath("$.errors.fromCurrency").value("From currency must not be blank"))
+            .andExpect(jsonPath("$.errors.fromCurrency").value("Currency must be exactly 3 characters"))
             .andExpect(jsonPath("$.errors.fee").value("Fee must be a positive value"))
             .andReturn()
 
